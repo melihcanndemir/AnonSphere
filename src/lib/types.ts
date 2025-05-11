@@ -10,3 +10,5 @@ export interface Confession {
   timestamp: number; // Store as Unix timestamp
   reactions: Record<Emoji, number>;
 }
+
+// git

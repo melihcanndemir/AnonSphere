@@ -42,3 +42,5 @@ export const useConfessionStore = create<ConfessionState>((set, get) => ({
       confessions: state.confessions.filter((c) => c.id !== confessionId),
     })),
 }));
+
+// git
