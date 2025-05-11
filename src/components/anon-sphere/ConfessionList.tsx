@@ -105,6 +105,3 @@ function CardSkeleton() {
     </div>
   );
 }
-
-
-// git

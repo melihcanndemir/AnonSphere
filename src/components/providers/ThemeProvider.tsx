@@ -95,5 +95,3 @@ export const useTheme = () => {
 
   return context;
 };
-
-// git

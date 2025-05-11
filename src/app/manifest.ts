@@ -25,5 +25,3 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
   };
 }
-
-// git

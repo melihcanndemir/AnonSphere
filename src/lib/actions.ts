@@ -95,5 +95,3 @@ export async function deleteConfessionAction(confessionId: string): Promise<Dele
     return { success: false, message: 'An unexpected error occurred while deleting the confession. Please try again.' };
   }
 }
-
-// git

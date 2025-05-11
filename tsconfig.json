@@ -25,5 +25,3 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "sc.js"],
   "exclude": ["node_modules"]
 }
-
-// git

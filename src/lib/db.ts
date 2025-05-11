@@ -64,5 +64,3 @@ export async function deleteConfession(id: string): Promise<boolean> {
   await new Promise(resolve => setTimeout(resolve, 50));
   return confessions.length < initialLength;
 }
-
-// git

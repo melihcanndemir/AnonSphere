@@ -41,5 +41,3 @@ export function SentimentFilter() {
     </div>
   );
 }
-
-// git
