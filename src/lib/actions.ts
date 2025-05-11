@@ -2,7 +2,11 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { addConfession as dbAddConfession, addReactionToConfession as dbAddReaction } from '@/lib/db';
+import { 
+  addConfession as dbAddConfession, 
+  addReactionToConfession as dbAddReaction,
+  deleteConfession as dbDeleteConfession
+} from '@/lib/db';
 import { classifyMessageSentiment } from '@/ai/flows/classify-message-sentiment';
 import type { Emoji, Sentiment } from '@/lib/types';
 
@@ -65,5 +69,29 @@ export async function addReactionAction(confessionId: string, emoji: Emoji): Pro
   } catch (error) {
     console.error('Error adding reaction:', error);
     return { success: false, message: 'Failed to add reaction.' };
+  }
+}
+
+export interface DeleteConfessionResult {
+  success: boolean;
+  message?: string;
+}
+
+export async function deleteConfessionAction(confessionId: string): Promise<DeleteConfessionResult> {
+  if (!confessionId) {
+    return { success: false, message: 'Confession ID is required.' };
+  }
+
+  try {
+    const deleted = await dbDeleteConfession(confessionId);
+    if (!deleted) {
+      return { success: false, message: 'Confession not found or already deleted.' };
+    }
+    revalidatePath('/');
+    return { success: true, message: 'Confession deleted successfully.' };
+  } catch (error) {
+    console.error('Error deleting confession:', error);
+    // It's good practice to return a generic error message to the client.
+    return { success: false, message: 'An unexpected error occurred while deleting the confession. Please try again.' };
   }
 }

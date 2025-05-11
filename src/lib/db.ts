@@ -62,3 +62,11 @@ export async function addReactionToConfession(id: string, emoji: Emoji): Promise
   }
   return undefined;
 }
+
+export async function deleteConfession(id: string): Promise<boolean> {
+  const initialLength = confessions.length;
+  confessions = confessions.filter(c => c.id !== id);
+  // Simulate async operation
+  await new Promise(resolve => setTimeout(resolve, 50));
+  return confessions.length < initialLength;
+}
