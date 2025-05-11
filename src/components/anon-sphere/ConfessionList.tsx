@@ -1,12 +1,12 @@
+
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useConfessionStore } from '@/lib/store';
 import type { Confession } from '@/lib/types';
 import { ConfessionCard } from './ConfessionCard';
 import { AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
 
 interface ConfessionListProps {
   initialConfessions: Confession[];
@@ -20,56 +20,52 @@ export function ConfessionList({ initialConfessions }: ConfessionListProps) {
     isInitialized: state.isInitialized,
   }));
 
+  const [clientHasMounted, setClientHasMounted] = useState(false);
+
   useEffect(() => {
-    // Initialize store only once on the client with server-fetched data
-    if (typeof window !== 'undefined' && !isInitialized) {
+    setClientHasMounted(true);
+    if (!isInitialized) {
       initializeConfessions(initialConfessions);
     }
   }, [initialConfessions, initializeConfessions, isInitialized]);
   
   const filteredConfessions = useMemo(() => {
-    if (!isInitialized) return []; 
+    if (!clientHasMounted || !isInitialized) {
+      // During SSR or before client hydration + store init, don't try to filter from store
+      return []; 
+    }
     return confessions.filter((confession) => {
       if (filter === 'all') return true;
       return confession.sentiment === filter;
     });
-  }, [confessions, filter, isInitialized]);
+  }, [confessions, filter, clientHasMounted, isInitialized]);
 
-  // Handle loading state before Zustand store is initialized on client
-  if (!isInitialized && typeof window !== 'undefined') {
+  // Unified loading/initial state for SSR and pre-hydration client render
+  if (!clientHasMounted || !isInitialized) {
+    if (initialConfessions.length === 0) {
+      // Render NoConfessionsMessage if initial data is empty.
+      // `filter` from store will be 'all' initially on both server (via getState) and client.
+      return <NoConfessionsMessage filter={useConfessionStore.getState().filter} isInitial={true} />;
+    }
+    // Render skeletons if there's initial data to load.
     return (
-      <div className="space-y-4 columns-1 md:columns-2 lg:columns-3 gap-4">
-        {[...Array(3)].map((_, i) => (
-          <CardSkeleton key={i} />
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
+        {[...Array(Math.min(initialConfessions.length, 6))].map((_, i) => (
+          <CardSkeleton key={`skeleton-${i}`} />
         ))}
       </div>
     );
   }
-  // If still not initialized (e.g. server render before client hydration), can show initial data directly or skeletons
-  if (!isInitialized && typeof window === 'undefined') {
-     const serverFiltered = initialConfessions.filter(c => filter === 'all' || c.sentiment === filter);
-     if (serverFiltered.length === 0) {
-       // Fallback content for SSR if no confessions match (though filter is client-side)
-        return <NoConfessionsMessage filter={filter} isInitial={true} />;
-     }
-     return (
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
-          {serverFiltered.map((confession, index) => (
-             <ConfessionCard key={confession.id || index} confession={confession} />
-          ))}
-        </div>
-     );
-  }
 
-
+  // After hydration and store initialization
   if (filteredConfessions.length === 0) {
     return <NoConfessionsMessage filter={filter} />;
   }
 
   return (
     <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
-      {filteredConfessions.map((confession, index) => (
-         <ConfessionCard key={confession.id || index} confession={confession} />
+      {filteredConfessions.map((confession) => (
+         <ConfessionCard key={confession.id} confession={confession} />
       ))}
     </div>
   );
@@ -78,7 +74,7 @@ export function ConfessionList({ initialConfessions }: ConfessionListProps) {
 function NoConfessionsMessage({ filter, isInitial = false }: { filter: string, isInitial?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-10 px-4 bg-card rounded-lg shadow">
-      <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+      <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" data-ai-hint="information circle" />
       <h3 className="text-xl font-semibold text-foreground mb-2">No Confessions Found</h3>
       <p className="text-muted-foreground">
         {isInitial && filter === 'all' ? "Be the first to share a secret!" : 
@@ -109,3 +105,4 @@ function CardSkeleton() {
     </div>
   );
 }
+
