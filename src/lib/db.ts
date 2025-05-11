@@ -17,13 +17,7 @@ let confessions: Confession[] = [
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
     reactions: { '👍': 1, '❤️': 3, '😂': 0, '🤔': 2, '😢': 6, '😠': 0 },
   },
-  {
-    id: crypto.randomUUID(),
-    text: 'This is a placeholder for a toxic message that would be filtered by default.',
-    sentiment: 'toxic',
-    timestamp: Date.now() - 1000 * 60 * 5, // 5 minutes ago
-    reactions: { '👍': 0, '❤️': 0, '😂': 0, '🤔': 1, '😢': 2, '😠': 5 },
-  }
+  // Removed placeholder toxic message
 ];
 
 export async function getAllConfessions(): Promise<Confession[]> {
